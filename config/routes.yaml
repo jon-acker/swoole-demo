@@ -1,0 +1,7 @@
+index:
+    path: /healthcheck
+    controller: App\Controller\HealthcheckController::healthCheck
+
+favicon:
+    path: /favicon.ico
+    controller: App\Controller\HealthcheckController::nop

@@ -1,0 +1,57 @@
+version: '2'
+
+services:
+  mysql:
+    build:
+      context: ./docker/mysql/
+    ports:
+      - 3306:3306
+    tmpfs:
+      - /var/lib/mysql
+      - /tmp
+    volumes:
+      - ./docker/mysql/:/docker-entrypoint-initdb.d/:z
+      - ./docker/mysql:/etc/mysql/conf.d/:z
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+    networks:
+      - swoole
+
+  nginx:
+    depends_on:
+      - php
+    links:
+      - php
+    build:
+      context: ./docker/nginx/
+    ports:
+      - 8080:80
+    networks:
+      - swoole
+    volumes:
+      - ./:/var/www/swoole-demo:cached
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d/:z
+
+  php:
+    ports:
+      - 9502:9502
+    build:
+      context: ./docker/php/
+    links:
+      - mysql
+    working_dir: /var/www/swoole-demo
+    environment:
+      SYMFONY_ENV: prod
+    mem_limit: 256m
+    networks:
+      - swoole
+    volumes:
+      - ./:/var/www/swoole-demo:cached
+
+networks:
+  swoole:
+    driver: bridge
+
