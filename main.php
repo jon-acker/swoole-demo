@@ -3,13 +3,11 @@ namespace App;
 
 require_once 'vendor/autoload.php';
 
-use App\Bridge\Swoole\Client;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 $port = 9502;
 $server = new \Swoole\Http\Server("localhost", $port);
-$client = new Client();
 $kernel = new Kernel('dev', true);
 
 function getVersion(): string
@@ -30,7 +28,7 @@ function copyHeaders(Response $symfonyResponse, \Swoole\Http\Response $response)
 
 print('Starting Swoole ' .  getVersion() . " - HTTP Server on port $port \n");
 
-$server->on('request', function ($request, $response) use ($client, $kernel) {
+$server->on('request', function ($request, $response) use ($kernel) {
 
     $symfonyRequest = Request::create($request->server['request_uri'], $request->server['request_method']);
     $symfonyResponse = $kernel->handle($symfonyRequest);

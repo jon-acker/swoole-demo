@@ -1,27 +1,43 @@
 <?php
 namespace App\Bridge\Swoole;
 
+use App\Bridge\Swoole\Client\Dns;
 use React\Promise\Deferred;
 use React\Promise\Promise;
 
+
+
 class Client
 {
+    /**
+     * @var Dns
+     */
+    private $dns;
+
+    /**
+     * Client constructor.
+     */
+    public function __construct(Dns $dns)
+    {
+        $this->dns = $dns;
+    }
+
     public function get(string $host, string $uri): Promise
     {
         $deferred = new Deferred();
 
-        $getter = function ($domainName, $ip) use ($deferred, $host, $uri) {
-
-            $client = new \Swoole\Http\Client($ip, 80);
-
-            $client->get($uri, function ($cli) use ($deferred) {
-                $deferred->resolve($cli->body);
-            });
+        $handleResponse = function ($cli) use ($deferred) {
+            // do something with cli->headers
+            $deferred->resolve($cli->body);
         };
 
-        \Swoole\Async::dnsLookup($host, $getter);
+        $fetchData = function (string $ip) use ($uri, $handleResponse) {
+            $client = new \Swoole\Http\Client($ip, 80);
+            $client->get($uri, $handleResponse);
+        };
+
+        $this->dns->lookup($host)->then($fetchData);
 
         return $deferred->promise();
     }
-
 }

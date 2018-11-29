@@ -1,29 +1,16 @@
 <?php
 namespace App\Controller;
 
+use App\HealthChecker\HealthService;
+use App\HealthChecker\Targets;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class HealthcheckController
 {
-    public function healthCheck()
+    public function healthCheck(HealthService $healthService, Targets $targets)
     {
-        //    \React\Promise\all([
-//        $client->get('www.bbc.co.uk', '/news/'),
-//        $client->get('www.google.co.uk', '/'),
-//    ])->done(function ($results) use ($response) {
-//
-//        $text = array_reduce($results, function ($all, $result) {
-//            return $all . '-------'. $result;
-//        });
-//
-//        $response->end($text.'bye');
-//    });
-
-        return new JsonResponse((object) [
-            'name' => 'Jon',
-            'age' => '111'
-        ]);
+        $healthService->check($targets);
     }
 
     public function nop()
